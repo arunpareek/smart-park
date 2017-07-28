@@ -12,10 +12,7 @@ The city council has also taken a novel approach by choosing to do this as a com
 As the first step, proximity sensors will help detect vehicle occupancy and stream the live data to an IoT cloud server. The sensor transmits the vehicle’s geolocation, the time it arrived at the parking space and the time when the vehicle leaves the parking space. The parking management system monitors the parking space with the help of live streaming from the cloud based sever.
  
 Members of the public can then use a mobile app that communicates with the parking management system to know the availability of parking spaces when they are nearby a parking area. This would drastically reduce the time for searching a parking space. The solution would also let users  buy tickets for their parking from within the app, thus providing a real hassle-free parking experience for them. It would also result in preventing accidents as the users need not focus on finding a parking space rather than focusing on the road. On the other side it would help the city traffic planning council to monitor the occupancy and payment yielding in reduction of nonpayment users benefiting revenue generation for the city.
- 
 
-Smart Park Hihh Level Solution Overview
- 
 The smart park solution has the following components:
 
 * Data Sensing and Generation:  Very low cost sensors are available today that  can be configured with a geo-fence based on the geo-location of every parking space. The parking availability/occupancy state for a particular parking space will be detected by sensor based on proximity of a vehicle around the geo-fence of a sensor. Data thus collected, can be streamed live for real time processing of events. The sensor metadata along with the parking space availability status can accurately provide the occupancy instead of traditional methods that are purely based on booking in and out times.
