@@ -1,0 +1,617 @@
+swagger: '2.0'
+info:
+  description: This is a the API landing page of the Corellia City Cary Park System.
+  version: 1.0.0
+  title: Corellia Smart Park API
+  contact:
+    email: arun.pareek@rubiconred.com
+host: smartpark.corellia.io
+basePath: /v2
+tags:
+  - name: smarkpark
+    description: Functions to help residents of Corelia find and secure a smart car park
+    externalDocs:
+      description: Find out more
+      url: 'http://smartpark.corellia.io'
+  - name: notification
+    description: Functions to send smart notifications to the residents of Corellia
+  - name: user
+    description: Functions to autenticate residents of Corelia into the Smart Park Portal
+  - name: carpark
+    description: Functions to manage and maintain smart car parks of Corelia
+    externalDocs:
+      description: Find out more about our system
+      url: 'htp://smartpark.corellia.io'
+schemes:
+  - http
+paths:
+  /parking:
+    post:
+      tags:
+        - smartpark
+      summary: Add a new parking to the parking site
+      description: ''
+      operationId: addParking
+      consumes:
+        - application/json
+        - application/xml
+      produces:
+        - application/xml
+        - application/json
+      parameters:
+        - in: body
+          name: body
+          description: Parking object that needs to be added to the parking site
+          required: true
+          schema:
+            $ref: '#/definitions/Parking'
+      responses:
+        '200':
+          description: successful operation
+          schema:
+            $ref: '#/definitions/Parking'
+        '400':
+          description: No Available Parking Found
+        '404':
+          description: Insufficient Credit
+        '405':
+          description: Invalid parking request
+        '406':
+          description: Validation exception
+      security:
+        - smartpark_auth:
+            - 'write:parking'
+            - 'read:parking'
+    put:
+      tags:
+        - smartpark
+      summary: Update an existing parking
+      description: ''
+      operationId: updateParking
+      consumes:
+        - application/json
+        - application/xml
+      produces:
+        - application/xml
+        - application/json
+      parameters:
+        - in: body
+          name: body
+          description: Parking object that needs to be updated to the parking site
+          required: true
+          schema:
+            $ref: '#/definitions/Parking'
+      responses:
+        '200':
+          description: successful operation
+          schema:
+            $ref: '#/definitions/Parking'
+        '400':
+          description: Invalid parking request
+        '404':
+          description: Parking Id not found
+        '405':
+          description: Validation exception
+      security:
+        - smartpark_auth:
+            - 'write:parking'
+            - 'read:parking'
+  '/parking/{parkingId}':
+    delete:
+      tags:
+        - smartpark
+      summary: Deletes a car park booking request
+      description: ''
+      operationId: deleteParkingRequest
+      produces:
+        - application/xml
+        - application/json
+      parameters:
+        - name: api_key
+          in: header
+          required: false
+          type: string
+        - name: parkingId
+          in: path
+          description: Parking id to delete
+          required: true
+          type: integer
+          format: int64
+      responses:
+        '400':
+          description: Invalid ID supplied
+        '404':
+          description: Parking request not found
+      security:
+        - smartpark_auth:
+            - 'write:parking'
+            - 'read:parking'
+  /parking/findByLocation:
+    get:
+      tags:
+        - smartpark
+      summary: >-
+        Finds parking by location. Multiple locations can be provided with a
+        comma separated string
+      description: Multiple location values can be provided with comma separated strings
+      operationId: findParkingByLocation
+      produces:
+        - application/xml
+        - application/json
+      parameters:
+        - name: status
+          in: query
+          description: Location values that need to be considered for filter
+          required: true
+          type: array
+          items:
+            type: string
+            enum:
+              - available
+              - pending
+              - sold
+            default: available
+          collectionFormat: multi
+      responses:
+        '200':
+          description: successful operation
+          schema:
+            $ref: '#/definitions/Parking'
+        '400':
+          description: Invalid status value
+      security:
+        - smartpark_auth:
+            - 'write:parking'
+            - 'read:parking'
+  '/parking/findByLocation/{postCode}':
+    get:
+      tags:
+        - smartpark
+      summary: Find carpark by location postcode
+      description: Returns car parks bypost code
+      operationId: getCarparkByPostCode
+      produces:
+        - application/xml
+        - application/json
+      parameters:
+        - name: postCode
+          in: path
+          description: ID of car park to return
+          required: true
+          type: integer
+          format: int64
+      responses:
+        '200':
+          description: successful operation
+          schema:
+            $ref: '#/definitions/Parking'
+        '400':
+          description: Invalid ID supplied
+        '404':
+          description: Parking not found
+      security:
+        - api_key: []
+  /parking/findBySite:
+    get:
+      tags:
+        - smartpark
+      summary: Find carparks by accepting site codes
+      description: Muliple site codes can be provided with comma separated strings
+      operationId: findCarparkBySite
+      produces:
+        - application/xml
+        - application/json
+      parameters:
+        - name: tags
+          in: query
+          description: Sites to filter by
+          required: true
+          type: array
+          items:
+            type: string
+          collectionFormat: multi
+      responses:
+        '200':
+          description: successful operation
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Parking'
+        '400':
+          description: Invalid tag value
+      security:
+        - smartpark_auth:
+            - 'write:parking'
+            - 'read:parking'
+      deprecated: false
+  '/parking/findBySite/{siteId}':
+    get:
+      tags:
+        - smartpark
+      summary: Find car parks by site Id
+      description: Returns a single car park
+      operationId: getCarparkBySiteId
+      produces:
+        - application/xml
+        - application/json
+      parameters:
+        - name: siteId
+          in: path
+          description: ID of site to return
+          required: true
+          type: integer
+          format: int64
+      responses:
+        '200':
+          description: successful operation
+          schema:
+            $ref: '#/definitions/Parking'
+        '400':
+          description: Invalid ID supplied
+        '404':
+          description: Parking not found
+      security:
+        - api_key: []
+  /notification/reminder:
+    post:
+      tags:
+        - notification
+      summary: Create a reminder for a user when a car park slot is available
+      description: This can only be done by the logged in user.
+      operationId: addReminder
+      produces:
+        - application/xml
+        - application/json
+      parameters:
+        - in: body
+          name: body
+          description: Created user object
+          required: true
+          schema:
+            $ref: '#/definitions/User'
+      responses:
+        default:
+          description: successful operation
+  /user:
+    post:
+      tags:
+        - user
+      summary: Create user
+      description: This can only be done by the logged in user.
+      operationId: createUser
+      produces:
+        - application/xml
+        - application/json
+      parameters:
+        - in: body
+          name: body
+          description: Created user object
+          required: true
+          schema:
+            $ref: '#/definitions/User'
+      responses:
+        default:
+          description: successful operation
+  /user/createWithArray:
+    post:
+      tags:
+        - user
+      summary: Creates list of users with given input array
+      description: ''
+      operationId: createUsersWithArrayInput
+      produces:
+        - application/xml
+        - application/json
+      parameters:
+        - in: body
+          name: body
+          description: List of user object
+          required: true
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/User'
+      responses:
+        default:
+          description: successful operation
+  /user/createWithList:
+    post:
+      tags:
+        - user
+      summary: Creates list of users with given input array
+      description: ''
+      operationId: createUsersWithListInput
+      produces:
+        - application/xml
+        - application/json
+      parameters:
+        - in: body
+          name: body
+          description: List of user object
+          required: true
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/User'
+      responses:
+        default:
+          description: successful operation
+  /user/login:
+    get:
+      tags:
+        - user
+      summary: Logs user into the system
+      description: ''
+      operationId: loginUser
+      produces:
+        - application/xml
+        - application/json
+      parameters:
+        - name: username
+          in: query
+          description: The user name for login
+          required: true
+          type: string
+        - name: password
+          in: query
+          description: The password for login in clear text
+          required: true
+          type: string
+      responses:
+        '200':
+          description: successful operation
+          schema:
+            type: string
+          headers:
+            X-Rate-Limit:
+              type: integer
+              format: int32
+              description: calls per hour allowed by the user
+            X-Expires-After:
+              type: string
+              format: date-time
+              description: date in UTC when token expires
+        '400':
+          description: Invalid username/password supplied
+  /user/logout:
+    get:
+      tags:
+        - user
+      summary: Logs out current logged in user session
+      description: ''
+      operationId: logoutUser
+      produces:
+        - application/xml
+        - application/json
+      parameters: []
+      responses:
+        default:
+          description: successful operation
+  '/user/{username}':
+    get:
+      tags:
+        - user
+      summary: Get user by user name
+      description: ''
+      operationId: getUserByName
+      produces:
+        - application/xml
+        - application/json
+      parameters:
+        - name: username
+          in: path
+          description: 'The name that needs to be fetched. Use user1 for testing. '
+          required: true
+          type: string
+      responses:
+        '200':
+          description: successful operation
+          schema:
+            $ref: '#/definitions/User'
+        '400':
+          description: Invalid username supplied
+        '404':
+          description: User not found
+    put:
+      tags:
+        - user
+      summary: Updated user
+      description: This can only be done by the logged in user.
+      operationId: updateUser
+      produces:
+        - application/xml
+        - application/json
+      parameters:
+        - name: username
+          in: path
+          description: name that need to be updated
+          required: true
+          type: string
+        - in: body
+          name: body
+          description: Updated user object
+          required: true
+          schema:
+            $ref: '#/definitions/User'
+      responses:
+        '400':
+          description: Invalid user supplied
+        '404':
+          description: User not found
+    delete:
+      tags:
+        - user
+      summary: Delete user
+      description: This can only be done by the logged in user.
+      operationId: deleteUser
+      produces:
+        - application/xml
+        - application/json
+      parameters:
+        - name: username
+          in: path
+          description: The name that needs to be deleted
+          required: true
+          type: string
+      responses:
+        '400':
+          description: Invalid username supplied
+        '404':
+          description: User not found
+securityDefinitions:
+  smartpark_auth:
+    type: oauth2
+    authorizationUrl: 'http://corellia.smartcity.io/oauth/dialog'
+    flow: implicit
+    scopes:
+      'write:parking': modify parkings in your account
+      'read:parking': retrieve your parkings
+  api_key:
+    type: apiKey
+    name: api_key
+    in: header
+definitions:
+  Carpark:
+    type: object
+    properties:
+      id:
+        type: integer
+        format: int64
+      carparkName:
+        type: string
+      totalCapacity:
+        type: integer
+      currentCapacity:
+        type: integer
+      hoursofOperationFrom:
+        type: string
+      hoursofOperationTo:
+        type: string
+      phone:
+        type: string
+      availabilityStatus:
+        type: string
+    xml:
+      name: Carpark
+  User:
+    type: object
+    properties:
+      id:
+        type: integer
+        format: int64
+      userName:
+        type: string
+      firstName:
+        type: string
+      lastName:
+        type: string
+      email:
+        type: string
+      password:
+        type: string
+      phone:
+        type: string
+      userStatus:
+        type: integer
+        format: int32
+        description: User Status
+    xml:
+      name: User
+  Parking:
+    type: object
+    required:
+      - id
+      - user
+      - siteIdentifiers
+      - availabilityPreferences
+    properties:
+      id:
+        type: integer
+        format: int64
+      user:
+        $ref: '#/definitions/User'
+      siteIdentifiers:
+        type: array
+        xml:
+          name: siteId
+          wrapped: true
+        items:
+          $ref: '#/definitions/Site'
+      availabilityPreferences:
+        type: array
+        xml:
+          name: availabilityPreference
+          wrapped: true
+        items:
+          $ref: '#/definitions/Availability'
+      availablityStatus:
+        type: array
+        xml:
+          name: siteId
+          wrapped: true
+        items:
+          $ref: '#/definitions/Status'
+    xml:
+      name: Parking
+  Availability:
+    type: object
+    required:
+      - date
+    properties:
+      date:
+        type: string
+      fromTime:
+        type: string
+      toTime:
+        type: string
+      duration:
+        type: string
+    xml:
+      name: Avaialbility
+  Status:
+    type: object
+    required:
+      - id
+      - statusCode
+    properties:
+      id:
+        type: integer
+        format: int64
+      statusCode:
+        type: string
+        description: parking status in the sites
+        enum:
+          - Available
+          - Occupied
+          - Hold
+    xml:
+      name: Status
+  Site:
+    type: object
+    required:
+      - siteId
+    properties:
+      siteId:
+        type: integer
+        format: int64
+      siteName:
+        type: string
+      siteAddress:
+        type: string
+      siteStatus:
+        type: string
+    xml:
+      name: Site
+  ParkingResponse:
+    type: object
+    properties:
+      parkingId:
+        type: integer
+        format: int32
+      parkingStatus:
+        type: string
+      message:
+        type: string
+externalDocs:
+  description: Find out more about Swagger
+  url: 'http://swagger.io'
